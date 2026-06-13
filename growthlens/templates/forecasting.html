@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+
+{% block title %}Forecasting & Predictions{% endblock %}
+{% block page_title %}Forecasting & Predictions{% endblock %}
+{% block page_h1 %}Forecasting & Predictions{% endblock %}
+{% block page_desc %}Forward-looking predictive insights and trend models using historical Olist parameters.{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    {% if not loaded %}
+    <!-- Fallback if pipeline not initialized -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger p-4" role="alert">
+                <h4 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>DataManager Not Ready</h4>
+                <p class="mb-0">The data engineering pipeline has not successfully loaded the Olist datasets. Please check the dataset connection status on the <a href="{{ url_for('data_overview.index') }}" class="alert-link">Data Overview</a> page to initialize the analytics matrix.</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Predictive Health Indicators (Outlook pills) -->
+    <div class="row g-4 mb-4">
+        <!-- Revenue Outlook -->
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card d-flex flex-row align-items-center justify-content-between p-3.5">
+                <div>
+                    <div class="card-title mb-1" style="font-size: 0.75rem;">Revenue Outlook</div>
+                    <h5 class="fw-bold m-0 text-slate-800" style="font-size: 1.1rem;">Sales Projections</h5>
+                </div>
+                <span class="status-indicator {% if indicators.revenue.badge == 'success' %}status-ready{% elif indicators.revenue.badge == 'warning' %}status-partial{% else %}status-missing{% endif %} px-2.5 py-1.5">
+                    {{ indicators.revenue.status }}
+                </span>
+            </div>
+        </div>
+        <!-- Customer Outlook -->
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card d-flex flex-row align-items-center justify-content-between p-3.5">
+                <div>
+                    <div class="card-title mb-1" style="font-size: 0.75rem;">Customer Outlook</div>
+                    <h5 class="fw-bold m-0 text-slate-800" style="font-size: 1.1rem;">New Acquisitions</h5>
+                </div>
+                <span class="status-indicator {% if indicators.customer.badge == 'success' %}status-ready{% elif indicators.customer.badge == 'warning' %}status-partial{% else %}status-missing{% endif %} px-2.5 py-1.5">
+                    {{ indicators.customer.status }}
+                </span>
+            </div>
+        </div>
+        <!-- Retention Outlook -->
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card d-flex flex-row align-items-center justify-content-between p-3.5">
+                <div>
+                    <div class="card-title mb-1" style="font-size: 0.75rem;">Retention Outlook</div>
+                    <h5 class="fw-bold m-0 text-slate-800" style="font-size: 1.1rem;">Repeat Purchasing</h5>
+                </div>
+                <span class="status-indicator {% if indicators.retention.badge == 'success' %}status-ready{% elif indicators.retention.badge == 'warning' %}status-partial{% else %}status-missing{% endif %} px-2.5 py-1.5">
+                    {{ indicators.retention.status }}
+                </span>
+            </div>
+        </div>
+        <!-- Overall Outlook -->
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card d-flex flex-row align-items-center justify-content-between p-3.5" style="border: 1px solid var(--primary-600) !important;">
+                <div>
+                    <div class="card-title mb-1" style="font-size: 0.75rem;">Overall Outlook</div>
+                    <h5 class="fw-bold m-0 text-slate-800" style="font-size: 1.1rem;">Predictive Health</h5>
+                </div>
+                <span class="status-indicator {% if indicators.overall.badge == 'success' %}status-ready{% elif indicators.overall.badge == 'warning' %}status-partial{% else %}status-missing{% endif %} px-2.5 py-1.5 fw-bold">
+                    {{ indicators.overall.status }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: Forecast Summary Hero -->
+    <div class="hero-flat-card mb-4">
+        <div class="d-flex align-items-center mb-3">
+            <span class="badge bg-primary px-3 py-1.5 fs-7 me-3"><i class="bi bi-shield-shaded me-1"></i>Forecast Summary</span>
+            <h5 class="m-0 text-white">Forward-Looking Strategic Projections</h5>
+        </div>
+        <div class="row g-4 mt-1">
+            <div class="col-12 col-md-6 col-lg-3 border-end border-secondary">
+                <div class="small text-muted mb-1" style="color: #94a3b8 !important;"><i class="bi bi-graph-up me-1 text-primary"></i>Key Forecast</div>
+                <p class="mb-0 text-slate-200 small lh-base">{{ summary.key_forecast | safe }}</p>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3 border-end border-secondary">
+                <div class="small text-muted mb-1" style="color: #94a3b8 !important;"><i class="bi bi-lightning-charge me-1 text-success"></i>Biggest Opportunity</div>
+                <p class="mb-0 text-slate-200 small lh-base">{{ summary.biggest_opportunity }}</p>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3 border-end border-secondary">
+                <div class="small text-muted mb-1" style="color: #94a3b8 !important;"><i class="bi bi-exclamation-triangle me-1 text-danger"></i>Biggest Risk</div>
+                <p class="mb-0 text-slate-200 small lh-base">{{ summary.biggest_risk }}</p>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="small text-muted mb-1" style="color: #94a3b8 !important;"><i class="bi bi-rocket-takeoff me-1 text-warning"></i>Recommended Action</div>
+                <p class="mb-0 text-slate-200 small lh-base">{{ summary.recommended_action }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forecast Accuracy Disclaimer Block (Clean minimal notification) -->
+    <div class="insight-card insight-warning mb-4">
+        <div class="insight-header">
+            <i class="bi bi-exclamation-triangle-fill text-warning insight-icon"></i>
+            <span>Forecast Disclaimer</span>
+        </div>
+        <div class="insight-body">
+            All forecasts are trend-based estimates generated from historical data. Predictions are intended for directional guidance and should not be interpreted as guaranteed outcomes.
+        </div>
+    </div>
+
+    <!-- 2x2 Grid Layout for Projections -->
+    <div class="row g-4">
+        <!-- Box 1: Revenue Forecast -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-card h-100">
+                <div class="card-header border-bottom">
+                    <div>
+                        <h5 class="card-title"><i class="bi bi-cash-stack text-primary me-2"></i>Revenue Trend & Forecast</h5>
+                        <p class="card-subtitle">Confidence Score: <strong class="text-dark">{{ revenue_snapshot.conf_score }}%</strong> ({{ revenue_snapshot.conf_rating }} fit)</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Line Chart</span>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row text-center mb-3 g-2">
+                        <div class="col-4 border-end">
+                            <span class="text-muted small d-block">Trend Slope</span>
+                            <strong class="text-slate-800 small">{{ revenue_snapshot.direction }} ({{ revenue_snapshot.slope_val }}/mo)</strong>
+                        </div>
+                        <div class="col-4 border-end">
+                            <span class="text-muted small d-block">Next Projected Month</span>
+                            <strong class="text-slate-800 small">${{ "{:,.2f}".format(revenue_snapshot.next_projected) }}</strong>
+                        </div>
+                        <div class="col-4">
+                            <span class="text-muted small d-block">Confidence Score</span>
+                            <strong class="text-slate-800 small">{{ revenue_snapshot.conf_score }}%</strong>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 280px;">
+                        <div id="revenue-forecast-chart" style="width: 100%; height: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Box 2: Customer Growth Projections -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-card h-100">
+                <div class="card-header border-bottom">
+                    <div>
+                        <h5 class="card-title"><i class="bi bi-people-fill text-primary me-2"></i>Customer Growth Forecast</h5>
+                        <p class="card-subtitle">3-Month Acquisitions & Return Buyers</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Line Chart</span>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row text-center mb-3 g-2">
+                        <div class="col-6 border-end">
+                            <span class="text-muted small d-block">New Acq Trend</span>
+                            <strong class="{% if customer_forecast.new_slope > 0 %}text-success{% else %}text-danger{% endif %} small">
+                                {% if customer_forecast.new_slope > 0 %}<i class="bi bi-arrow-up-right me-1"></i>{% else %}<i class="bi bi-arrow-down-left me-1"></i>{% endif %}
+                                {{ "{:+.1f}".format(customer_forecast.new_slope) }} / mo
+                            </strong>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Repeat Buyer Trend</span>
+                            <strong class="{% if customer_forecast.repeat_slope > 0 %}text-success{% else %}text-danger{% endif %} small">
+                                {% if customer_forecast.repeat_slope > 0 %}<i class="bi bi-arrow-up-right me-1"></i>{% else %}<i class="bi bi-arrow-down-left me-1"></i>{% endif %}
+                                {{ "{:+.1f}".format(customer_forecast.repeat_slope) }} / mo
+                            </strong>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="height: 280px;">
+                        <div id="customer-growth-chart" style="width: 100%; height: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Box 3: Churn Risk Analysis -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-card h-100">
+                <div class="card-header border-bottom">
+                    <div>
+                        <h5 class="card-title"><i class="bi bi-shield-exclamation text-primary me-2"></i>Churn Risk Distribution</h5>
+                        <p class="card-subtitle">RFM-Based Segmentation risk allocations</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Donut</span>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-6">
+                            <table class="table-custom" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Risk Tier</th>
+                                        <th style="text-align: right;">Count</th>
+                                        <th style="text-align: right;">Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="status-indicator status-ready me-1"></span>Low Risk</td>
+                                        <td style="text-align: right; font-weight: 500;">{{ "{:,}".format(churn_risk["Low Risk"]["count"]) }}</td>
+                                        <td style="text-align: right;" class="text-muted">{{ "{:.1f}%".format(churn_risk["Low Risk"]["pct"]) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="status-indicator status-partial me-1"></span>Medium Risk</td>
+                                        <td style="text-align: right; font-weight: 500;">{{ "{:,}".format(churn_risk["Medium Risk"]["count"]) }}</td>
+                                        <td style="text-align: right;" class="text-muted">{{ "{:.1f}%".format(churn_risk["Medium Risk"]["pct"]) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="status-indicator status-missing me-1"></span>High Risk</td>
+                                        <td style="text-align: right; font-weight: 500;">{{ "{:,}".format(churn_risk["High Risk"]["count"]) }}</td>
+                                        <td style="text-align: right;" class="text-muted">{{ "{:.1f}%".format(churn_risk["High Risk"]["pct"]) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="chart-container" style="height: 220px;">
+                                <div id="churn-risk-chart" style="width: 100%; height: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Box 4: Category Growth Outlook -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-card h-100">
+                <div class="card-header border-bottom">
+                    <div>
+                        <h5 class="card-title"><i class="bi bi-tags-fill text-primary me-2"></i>Category Growth Projections</h5>
+                        <p class="card-subtitle">Slopes of Top Product Categories (Last 6 Months)</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Bar Chart</span>
+                </div>
+                <div class="card-body p-3">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-arrow-up-circle-fill text-success me-1"></i>Top Growing</div>
+                            <ul class="list-group list-group-flush mb-3 small">
+                                {% for cat in category_outlook.growing %}
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span class="text-slate-800 text-truncate" style="max-width: 150px;">{{ cat.category }}</span>
+                                    <span class="badge bg-success-subtle text-success">+{{ "{:,.0f}".format(cat.slope) }}/mo</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            
+                            <div class="small text-muted fw-bold mb-1"><i class="bi bi-arrow-down-circle-fill text-danger me-1"></i>Weakening</div>
+                            <ul class="list-group list-group-flush small">
+                                {% for cat in category_outlook.weakening %}
+                                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                    <span class="text-slate-800 text-truncate" style="max-width: 150px;">{{ cat.category }}</span>
+                                    <span class="badge bg-danger-subtle text-danger">{{ "{:,.0f}".format(cat.slope) }}/mo</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="chart-container" style="height: 220px;">
+                                <div id="category-outlook-chart" style="width: 100%; height: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forecast vs Actual Tracking Section (Placeholder Future Proofing) -->
+    <h5 class="fw-bold mb-3 mt-4 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-clock-history text-primary me-2"></i>Forecast vs Actual Tracking</h5>
+    <div class="insight-card insight-info mb-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <h6 class="fw-bold text-slate-800 mb-1" style="font-size: 0.875rem;">Historical Accuracy Tracker</h6>
+                <p class="text-muted small mb-0" style="font-size: 0.8125rem;">This module compares previously generated forecasts against actual verified monthly outcomes as new billing periods are finalized.</p>
+            </div>
+            <span class="status-indicator status-missing fw-semibold"><i class="bi bi-shield-lock me-1"></i>Actual Data Available: No</span>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if loaded %}
+<!-- Initialize Plotly plots -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const plotConfig = { responsive: true, displayModeBar: false };
+
+        const revenueForecastData = {{ graphs.revenue_forecast | safe }};
+        revenueForecastData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        revenueForecastData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        revenueForecastData.layout.font = { family: "Inter, system-ui, sans-serif", size: 10, color: "#64748b" };
+        if (revenueForecastData.layout.xaxis) { revenueForecastData.layout.xaxis.linecolor = '#e2e8f0'; revenueForecastData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (revenueForecastData.layout.yaxis) { revenueForecastData.layout.yaxis.linecolor = '#e2e8f0'; revenueForecastData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('revenue-forecast-chart', revenueForecastData.data, revenueForecastData.layout, plotConfig);
+
+        const customerForecastData = {{ graphs.customer_forecast | safe }};
+        customerForecastData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        customerForecastData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        customerForecastData.layout.font = { family: "Inter, system-ui, sans-serif", size: 10, color: "#64748b" };
+        if (customerForecastData.layout.xaxis) { customerForecastData.layout.xaxis.linecolor = '#e2e8f0'; customerForecastData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (customerForecastData.layout.yaxis) { customerForecastData.layout.yaxis.linecolor = '#e2e8f0'; customerForecastData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('customer-growth-chart', customerForecastData.data, customerForecastData.layout, plotConfig);
+
+        const churnRiskData = {{ graphs.churn_risk | safe }};
+        churnRiskData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        churnRiskData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        churnRiskData.layout.font = { family: "Inter, system-ui, sans-serif", size: 10, color: "#64748b" };
+        Plotly.newPlot('churn-risk-chart', churnRiskData.data, churnRiskData.layout, plotConfig);
+
+        const categoryOutlookData = {{ graphs.category_outlook | safe }};
+        categoryOutlookData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        categoryOutlookData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        categoryOutlookData.layout.font = { family: "Inter, system-ui, sans-serif", size: 10, color: "#64748b" };
+        if (categoryOutlookData.layout.xaxis) { categoryOutlookData.layout.xaxis.linecolor = '#e2e8f0'; categoryOutlookData.layout.xaxis.gridcolor = '#f1f5f9'; }
+        if (categoryOutlookData.layout.yaxis) { categoryOutlookData.layout.yaxis.linecolor = '#e2e8f0'; categoryOutlookData.layout.yaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        Plotly.newPlot('category-outlook-chart', categoryOutlookData.data, categoryOutlookData.layout, plotConfig);
+    });
+</script>
+{% endif %}
+{% endblock %}

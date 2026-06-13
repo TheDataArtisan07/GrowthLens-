@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Upload Center - GrowthLens</title>
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Style -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        .landing-navbar {
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-main);
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+            padding: 16px 0;
+        }
+        
+        /* Drag and drop upload zone */
+        .upload-dropzone {
+            border: 2px dashed var(--border-main);
+            border-radius: 8px;
+            background-color: var(--bg-canvas);
+            padding: 40px var(--space-24);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .upload-dropzone:hover, .upload-dropzone.dragover {
+            border-color: var(--primary-600);
+            background-color: var(--primary-50);
+        }
+
+        .upload-dropzone i {
+            font-size: 2.5rem;
+            color: var(--text-subtitle);
+            margin-bottom: var(--space-12);
+            display: block;
+        }
+
+        .btn-saas-primary {
+            background-color: var(--primary-600);
+            color: #ffffff;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-saas-primary:hover {
+            background-color: var(--primary-500);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .btn-saas-secondary {
+            background-color: #ffffff;
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid var(--border-main);
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-saas-secondary:hover {
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <!-- Landing Navbar -->
+    <nav class="navbar navbar-expand-lg landing-navbar">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-dark fs-4 d-flex align-items-center" href="/">
+                <i class="bi bi-lens me-2 text-primary"></i>GrowthLens
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#landingNav" aria-controls="landingNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="landingNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link text-slate-800 fw-medium" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-primary fw-semibold" href="{{ url_for('upload.index') }}">Upload Dataset</a>
+                    </li>
+                </ul>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('dashboard.index') }}" class="btn-saas-primary py-2 px-3.5 fs-7">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container py-5" style="max-width: 1100px;">
+        <!-- Page Title & Header -->
+        <div class="mb-5 pb-3 border-bottom">
+            <h1 class="h3 fw-bold mb-1">Dataset Upload Center</h1>
+            <p class="text-muted small mb-0">Upload e-commerce logs to run schema validations and generate structured previews.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show mb-4 small" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Dropzone form -->
+        <div class="card border-0 mb-4" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+            <div class="card-body p-4">
+                <form action="{{ url_for('upload.index') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <div class="upload-dropzone" id="dropzone">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <h5 class="fw-bold mb-2">Drop Dataset Here</h5>
+                        <p class="text-muted small mb-4">Supported formats: CSV files (individual tables) or a single ZIP archive</p>
+                        
+                        <input type="file" name="file" id="fileInput" class="d-none" accept=".csv,.zip">
+                        <button type="button" class="btn-saas-secondary" onclick="document.getElementById('fileInput').click();">Browse Files</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if validated %}
+            <!-- Summary Banner -->
+            {% if summary.is_ready %}
+                <div class="alert bg-success-50 border-start border-4 border-success p-3.5 mb-4" role="alert">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success fs-4 me-3"></i>
+                            <div>
+                                <strong class="d-block mb-0.5 text-success-emphasis" style="font-weight: 700;">Dataset Ready for Analysis</strong>
+                                <span class="small text-success-emphasis" style="font-weight: 500;">All core database tables successfully uploaded and schema schemas verified.</span>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('dashboard.index') }}" class="btn-saas-primary py-2 px-3.5 fs-7"><i class="bi bi-speedometer2 me-1"></i>View Demo Dashboard</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert bg-warning-50 border-start border-4 border-warning p-3.5 mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill text-warning fs-4 me-3"></i>
+                        <div>
+                            <strong class="d-block mb-0.5 text-warning-emphasis" style="font-weight: 700;">Validation Incomplete</strong>
+                            <span class="small text-warning-emphasis" style="font-weight: 500;">Please upload all core datasets (orders, customers, order_items, payments) to fulfill model integrity.</span>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="row g-4 mb-4">
+                <!-- Summary Panel -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 border-0 shadow-sm" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+                        <div class="card-header bg-transparent border-bottom py-3">
+                            <h5 class="card-title m-0 fw-bold fs-6"><i class="bi bi-list-check text-primary me-2"></i>Upload Summary</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="small text-muted fw-semibold">Number of Files</span>
+                                <span class="badge bg-light text-dark border px-2.5 py-1.5 font-monospace fw-bold">{{ summary.files_count }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="small text-muted fw-semibold">Total Rows</span>
+                                <span class="badge bg-light text-dark border px-2.5 py-1.5 font-monospace fw-bold">{{ "{:,}".format(summary.total_rows) }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="small text-muted fw-semibold">Detected Tables</span>
+                                <span class="badge bg-light text-dark border px-2.5 py-1.5 font-monospace fw-bold">{{ summary.detected_tables }} / 9</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                <span class="small text-muted fw-semibold">Validation Status</span>
+                                {% if summary.is_ready %}
+                                    <span class="status-indicator status-ready">✓ Valid</span>
+                                {% else %}
+                                    <span class="status-indicator status-partial">! Incomplete</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Validation Results Table -->
+                <div class="col-12 col-md-8">
+                    <div class="table-custom-card h-100">
+                        <table class="table-custom">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Mapped Table</th>
+                                    <th>Rows</th>
+                                    <th style="text-align: center;">Status</th>
+                                    <th>Validation Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for res in validation_results %}
+                                <tr>
+                                    <td class="fw-semibold">{{ res.file_name }}</td>
+                                    <td><span class="font-monospace small text-primary">{{ res.mapped_table }}</span></td>
+                                    <td>{{ "{:,}".format(res.rows) }}</td>
+                                    <td style="text-align: center;">
+                                        {% if res.status == 'Valid' %}
+                                            <span class="status-indicator status-ready">✓ Valid</span>
+                                        {% else %}
+                                            <span class="status-indicator status-missing">✗ Invalid</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-muted">{{ res.validation_result }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview Section -->
+            {% if previews %}
+                <h5 class="fw-bold mb-3 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Dataset Table Previews (First 5 Rows)</h5>
+                {% for name, prev in previews.items() %}
+                    <div class="chart-card mb-4">
+                        <div class="card-header bg-white py-2.5 px-3">
+                            <h6 class="fw-bold text-slate-800 mb-0" style="font-size: 0.875rem;"><i class="bi bi-table text-primary me-2"></i>File: {{ name }}</h6>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped mb-0 small" style="font-size: 0.75rem;">
+                                <thead class="table-light">
+                                    <tr>
+                                        {% for head in prev.headers %}
+                                            <th>{{ head }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in prev.rows %}
+                                        <tr>
+                                            {% for head in prev.headers %}
+                                                <td>{{ row[head] }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="landing-footer" style="background-color: #0f172a; color: #94a3b8; padding: 48px 0 24px 0;">
+        <div class="container text-center">
+            <p class="small text-muted mb-2">&copy; 2026 GrowthLens. All rights reserved.</p>
+            <p class="small text-muted mb-0">Version 1.0.0 (Data Upload Center Panel)</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Drag and Drop upload Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const form = document.getElementById('uploadForm');
+
+            if (dropzone && fileInput && form) {
+                dropzone.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    dropzone.classList.add('dragover');
+                });
+
+                dropzone.addEventListener('dragleave', function () {
+                    dropzone.classList.remove('dragover');
+                });
+
+                dropzone.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    dropzone.classList.remove('dragover');
+                    
+                    if (e.dataTransfer.files.length > 0) {
+                        fileInput.files = e.dataTransfer.files;
+                        form.submit();
+                    }
+                });
+
+                fileInput.addEventListener('change', function () {
+                    if (fileInput.files.length > 0) {
+                        form.submit();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

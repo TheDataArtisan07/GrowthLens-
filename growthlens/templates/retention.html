@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+
+{% block title %}Retention Analytics{% endblock %}
+{% block page_title %}Retention Analytics{% endblock %}
+{% block page_h1 %}Retention Analytics{% endblock %}
+{% block page_desc %}Evaluate user cohort trends, return interval profiles, and lifecycle loyalty.{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    {% if not loaded %}
+    <!-- Fallback if pipeline not initialized -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger p-4" role="alert">
+                <h4 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>DataManager Not Ready</h4>
+                <p class="mb-0">The data engineering pipeline has not successfully loaded the Olist datasets. Please check the dataset connection status on the <a href="{{ url_for('data_overview.index') }}" class="alert-link">Data Overview</a> page to initialize the analytics matrix.</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Row 1: KPI Stat Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Card 1: Repeat Purchase Rate -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Repeat Rate</div>
+                    <div class="card-value" style="font-size: 1.25rem;">{{ kpis.repeat_rate }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small">Users with >1 orders</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 2: Average Month 1 Retention -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Month 1 Retention</div>
+                    <div class="card-value" style="font-size: 1.25rem;">{{ kpis.retention_rate }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small">Avg Month 1 return %</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Business Churn Rate (RFM) -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Business Churn</div>
+                    <div class="card-value" style="font-size: 1.25rem; color: var(--danger-600);">{{ kpis.business_churn }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small">Lost + At Risk (RFM)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Retention Churn Rate (Cohort) -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Retention Churn</div>
+                    <div class="card-value" style="font-size: 1.25rem; color: var(--danger-600);">{{ kpis.retention_churn }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small">Non-returning after M0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: Average Days Between Purchases -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Days Between</div>
+                    <div class="card-value text-truncate" style="font-size: 1.25rem; font-weight: 700;">{{ kpis.avg_return_days }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small">Avg return time lag</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6: Best Performing Cohort -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Best Cohort</div>
+                    <div class="card-value text-truncate" style="font-size: 1.15rem; font-weight: 700;">{{ kpis.best_cohort }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small" style="font-size: 0.7rem;">M1: {{ kpis.best_m1_pct }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Health Section -->
+    <h5 class="fw-bold mb-3 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-activity text-danger me-2"></i>Retention Health & Loyalty Indicators</h5>
+    <div class="row g-4 mb-4">
+        <!-- Retention Health -->
+        <div class="col-12 col-md-4">
+            <div class="insight-card h-100 {% if health.retention.badge == 'success' %}insight-success{% elif health.retention.badge == 'warning' %}insight-warning{% else %}insight-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-slate-800" style="font-size: 0.875rem;">Retention Health</span>
+                    <span class="status-indicator {% if health.retention.badge == 'success' %}status-ready{% elif health.retention.badge == 'warning' %}status-partial{% else %}status-missing{% endif %}">{{ health.retention.status }}</span>
+                </div>
+                <p class="text-muted small mb-0" style="font-size: 0.8125rem;">{{ health.retention.desc }}</p>
+            </div>
+        </div>
+
+        <!-- Churn Risk -->
+        <div class="col-12 col-md-4">
+            <div class="insight-card h-100 {% if health.churn.badge == 'success' %}insight-success{% elif health.churn.badge == 'warning' %}insight-warning{% else %}insight-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-slate-800" style="font-size: 0.875rem;">Dormancy Churn Risk</span>
+                    <span class="status-indicator {% if health.churn.badge == 'success' %}status-ready{% elif health.churn.badge == 'warning' %}status-partial{% else %}status-missing{% endif %}">{{ health.churn.status }}</span>
+                </div>
+                <p class="text-muted small mb-0" style="font-size: 0.8125rem;">{{ health.churn.desc }}</p>
+            </div>
+        </div>
+
+        <!-- Customer Loyalty -->
+        <div class="col-12 col-md-4">
+            <div class="insight-card h-100 {% if health.loyalty.badge == 'success' %}insight-success{% elif health.loyalty.badge == 'warning' %}insight-warning{% else %}insight-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-slate-800" style="font-size: 0.875rem;">Base Loyalty</span>
+                    <span class="status-indicator {% if health.loyalty.badge == 'success' %}status-ready{% elif health.loyalty.badge == 'warning' %}status-partial{% else %}status-missing{% endif %}">{{ health.loyalty.status }}</span>
+                </div>
+                <p class="text-muted small mb-0" style="font-size: 0.8125rem;">{{ health.loyalty.desc }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Heatmap matrix -->
+    <div class="row g-4 mb-4">
+        <!-- Cohort Retention Heatmap -->
+        <div class="col-12">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">User Cohort Retention Grid (%)</h5>
+                        <p class="card-subtitle">Cohort percentage of returning customers by month indices</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Heatmap Grid</span>
+                </div>
+                <div class="chart-container" style="height: 480px;">
+                    <div id="cohort-heatmap" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Churn donut & Repeat trend line -->
+    <div class="row g-4 mb-4">
+        <!-- Churn vs Retention (RFM) -->
+        <div class="col-12 col-lg-4">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Business Churn vs Retention</h5>
+                        <p class="card-subtitle">RFM active vs dormancy segment ratios</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">RFM Segments</span>
+                </div>
+                <div class="chart-container">
+                    <div id="donut-churn-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Repeat Purchase Trend -->
+        <div class="col-12 col-lg-8">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Active Repeat Buyers Share Over Time</h5>
+                        <p class="card-subtitle">Monthly share percentage of non-first-time orders</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Monthly Repeat Rate</span>
+                </div>
+                <div class="chart-container">
+                    <div id="repeat-trend-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 4: Lifespans & Return Intervals Histograms -->
+    <div class="row g-4 mb-4">
+        <!-- Customer Lifetime Distribution -->
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Customer Lifetime Distribution (Repeat Buyers)</h5>
+                        <p class="card-subtitle">Span in days between first and last recorded transaction</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Lifespan Days</span>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div id="lifetime-dist-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Days Between Purchases Distribution -->
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Purchase Return Interval Distribution</h5>
+                        <p class="card-subtitle">Histogram of day spans separating consecutive orders</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Time Lag Days</span>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div id="intervals-dist-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 5: Insight Cards -->
+    <h5 class="fw-bold mb-3 mt-4 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Automated Retention Insights</h5>
+    <div class="row g-3 mb-4">
+        {% for insight in insights %}
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="insight-card h-100 {% if insight.type == 'success' %}insight-success{% elif insight.type == 'warning' %}insight-warning{% elif insight.type == 'info' %}insight-info{% else %}insight-secondary{% endif %}">
+                <div class="insight-header">
+                    <i class="bi {{ insight.icon }} insight-icon {% if insight.type == 'success' %}text-success{% elif insight.type == 'warning' %}text-warning{% elif insight.type == 'info' %}text-primary{% else %}text-muted{% endif %}"></i>
+                    <span>{{ insight.title }}</span>
+                </div>
+                <div class="insight-body">
+                    {{ insight.text | safe }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Row 6: Recommendation Engine -->
+    <h5 class="fw-bold mb-3 mt-4 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-rocket-takeoff-fill text-primary me-2"></i>Suggested Strategy Recommendations</h5>
+    <div class="table-custom-card mb-5">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Finding</th>
+                    <th style="width: 20%;">Impact</th>
+                    <th style="width: 40%;">Strategic Action Plan</th>
+                    <th style="width: 15%; text-align: center;">Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in recommendations %}
+                <tr>
+                    <td class="fw-semibold">{{ rec.finding }}</td>
+                    <td class="text-muted">{{ rec.impact }}</td>
+                    <td>{{ rec.recommendation }}</td>
+                    <td style="text-align: center;">
+                        <span class="status-indicator {% if rec.priority == 'Critical' %}status-missing{% elif rec.priority == 'High' %}status-partial{% else %}status-ready{% endif %}">
+                            {{ rec.priority }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if loaded %}
+<!-- Initialize Plotly plots -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const plotConfig = { responsive: true, displayModeBar: false };
+
+        const heatmapData = {{ graphs.heatmap | safe }};
+        heatmapData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        heatmapData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        heatmapData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (heatmapData.layout.xaxis) { heatmapData.layout.xaxis.linecolor = '#e2e8f0'; heatmapData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (heatmapData.layout.yaxis) { heatmapData.layout.yaxis.linecolor = '#e2e8f0'; heatmapData.layout.yaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        Plotly.newPlot('cohort-heatmap', heatmapData.data, heatmapData.layout, plotConfig);
+        
+        const donutChurnData = {{ graphs.donut_churn | safe }};
+        donutChurnData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        donutChurnData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        donutChurnData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        Plotly.newPlot('donut-churn-chart', donutChurnData.data, donutChurnData.layout, plotConfig);
+
+        const repeatTrendData = {{ graphs.repeat_trend | safe }};
+        repeatTrendData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        repeatTrendData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        repeatTrendData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (repeatTrendData.layout.xaxis) { repeatTrendData.layout.xaxis.linecolor = '#e2e8f0'; repeatTrendData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (repeatTrendData.layout.yaxis) { repeatTrendData.layout.yaxis.linecolor = '#e2e8f0'; repeatTrendData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('repeat-trend-chart', repeatTrendData.data, repeatTrendData.layout, plotConfig);
+
+        const lifetimeDistData = {{ graphs.lifetime_dist | safe }};
+        lifetimeDistData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        lifetimeDistData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        lifetimeDistData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (lifetimeDistData.layout.xaxis) { lifetimeDistData.layout.xaxis.linecolor = '#e2e8f0'; lifetimeDistData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (lifetimeDistData.layout.yaxis) { lifetimeDistData.layout.yaxis.linecolor = '#e2e8f0'; lifetimeDistData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('lifetime-dist-chart', lifetimeDistData.data, lifetimeDistData.layout, plotConfig);
+
+        const intervalsDistData = {{ graphs.intervals_dist | safe }};
+        intervalsDistData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        intervalsDistData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        intervalsDistData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (intervalsDistData.layout.xaxis) { intervalsDistData.layout.xaxis.linecolor = '#e2e8f0'; intervalsDistData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (intervalsDistData.layout.yaxis) { intervalsDistData.layout.yaxis.linecolor = '#e2e8f0'; intervalsDistData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('intervals-dist-chart', intervalsDistData.data, intervalsDistData.layout, plotConfig);
+    });
+</script>
+{% endif %}
+{% endblock %}

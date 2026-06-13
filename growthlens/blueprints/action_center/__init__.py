@@ -1,0 +1,1 @@
+from growthlens.blueprints.action_center.routes import action_center_bp

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowthLens - E-Commerce Business Intelligence SaaS</title>
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom Style -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        /* Landing Page Specific Overrides */
+        .landing-navbar {
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-main);
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+            padding: 16px 0;
+        }
+        
+        .landing-hero {
+            padding: 96px 0 64px 0;
+            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .btn-saas-primary {
+            background-color: var(--primary-600);
+            color: #ffffff;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-saas-primary:hover {
+            background-color: var(--primary-500);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .btn-saas-secondary {
+            background-color: #ffffff;
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 6px;
+            border: 1px solid var(--border-main);
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-saas-secondary:hover {
+            background-color: var(--bg-canvas);
+            color: var(--text-main);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        /* Mockup Preview styles */
+        .mockup-container {
+            border: 1px solid var(--border-main);
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            max-width: 1000px;
+            margin: 48px auto 0 auto;
+        }
+
+        .mockup-header {
+            background-color: var(--bg-canvas);
+            border-bottom: 1px solid var(--border-main);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+        }
+
+        .mockup-body {
+            padding: 24px;
+            background-color: var(--bg-canvas);
+        }
+
+        /* Landing sections */
+        .section-padding {
+            padding: 80px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .landing-footer {
+            background-color: #0f172a;
+            color: #94a3b8;
+            padding: 64px 0 32px 0;
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <!-- Landing Navbar -->
+    <nav class="navbar navbar-expand-lg landing-navbar">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-dark fs-4 d-flex align-items-center" href="/">
+                <i class="bi bi-lens me-2 text-primary"></i>GrowthLens
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#landingNav" aria-controls="landingNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="landingNav">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link text-slate-800 fw-medium" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-slate-800 fw-medium" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-slate-800 fw-medium" href="{{ url_for('upload.index') }}">Upload Dataset</a>
+                    </li>
+                </ul>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('upload.index') }}" class="btn-saas-secondary py-2 px-3.5 fs-7">Upload Dataset</a>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn-saas-primary py-2 px-3.5 fs-7">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="landing-hero">
+        <div class="container text-center">
+            <span class="badge rounded-pill bg-primary-50 text-primary-600 px-3 py-2 fw-semibold mb-3 border" style="border-color: rgba(99, 102, 241, 0.2) !important;">
+                <i class="bi bi-rocket-takeoff-fill me-1"></i>GrowthLens BI SaaS Platform
+            </span>
+            <h1 class="display-4 fw-extrabold text-slate-900 mb-3 tracking-tight" style="font-weight: 800; max-width: 800px; margin: 0 auto;">
+                Transform E-Commerce Data Into Actionable Business Intelligence
+            </h1>
+            <p class="lead text-muted mb-4" style="max-width: 650px; margin: 20px auto 32px auto; font-size: 1.125rem;">
+                Analyze revenue, customers, retention, satisfaction, and future growth opportunities using powerful analytics.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('dashboard.index') }}" class="btn-saas-primary">Get Started</a>
+                <a href="{{ url_for('upload.index') }}" class="btn-saas-secondary">Upload Dataset</a>
+            </div>
+
+            <!-- Hero Visual: Mockup Preview of Dashboard -->
+            <div class="mockup-container">
+                <div class="mockup-header">
+                    <div class="mockup-dot" style="background-color: #ef4444;"></div>
+                    <div class="mockup-dot" style="background-color: #eab308;"></div>
+                    <div class="mockup-dot" style="background-color: #22c55e;"></div>
+                    <span class="text-muted font-monospace small ms-2" style="font-size: 0.75rem;">app.growthlens.io/dashboard</span>
+                </div>
+                <div class="mockup-body">
+                    <!-- Stat row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-4">
+                            <div class="kpi-card text-start bg-white p-3 border">
+                                <div class="card-title text-uppercase font-monospace" style="font-size: 0.65rem;">Gross Revenue</div>
+                                <div class="card-value fs-4">$16.01M</div>
+                                <span class="card-trend trend-up text-success small" style="font-size: 0.7rem;"><i class="bi bi-arrow-up-right"></i> +8.2%</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="kpi-card text-start bg-white p-3 border">
+                                <div class="card-title text-uppercase font-monospace" style="font-size: 0.65rem;">Active Customers</div>
+                                <div class="card-value fs-4">96.1K</div>
+                                <span class="card-trend trend-up text-success small" style="font-size: 0.7rem;"><i class="bi bi-arrow-up-right"></i> +3.1%</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="kpi-card text-start bg-white p-3 border">
+                                <div class="card-title text-uppercase font-monospace" style="font-size: 0.65rem;">Repeat Rate</div>
+                                <div class="card-value fs-4">3.12%</div>
+                                <span class="card-trend trend-up text-success small" style="font-size: 0.7rem;"><i class="bi bi-arrow-repeat"></i> High Loyalty</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart Mockup -->
+                    <div class="bg-white p-3 border rounded-3 text-start" style="height: 200px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                            <span class="fw-semibold text-slate-800 small">Sales Projections & Forecast (Next 3 Months)</span>
+                            <span class="badge bg-success-subtle text-success border rounded-pill">Active Forecast</span>
+                        </div>
+                        <!-- Simple visual representations using SVG -->
+                        <div style="flex-grow:1; display:flex; align-items:flex-end; gap: 12px; padding: 12px 10px 0 10px;">
+                            <div class="w-100 bg-light" style="height: 40%; border-radius: 4px; background: linear-gradient(0deg, #e0e7ff 0%, #4f46e5 100%);"></div>
+                            <div class="w-100 bg-light" style="height: 55%; border-radius: 4px; background: linear-gradient(0deg, #e0e7ff 0%, #4f46e5 100%);"></div>
+                            <div class="w-100 bg-light" style="height: 62%; border-radius: 4px; background: linear-gradient(0deg, #e0e7ff 0%, #4f46e5 100%);"></div>
+                            <div class="w-100 bg-light" style="height: 80%; border-radius: 4px; background: linear-gradient(0deg, #e0e7ff 0%, #4f46e5 100%);"></div>
+                            <div class="w-100 bg-light border-dashed border-primary" style="height: 85%; border-radius: 4px; background: linear-gradient(0deg, #f5f3ff 0%, #a5b4fc 100%); border: 1px dashed var(--primary-600);"></div>
+                            <div class="w-100 bg-light border-dashed border-primary" style="height: 92%; border-radius: 4px; background: linear-gradient(0deg, #f5f3ff 0%, #a5b4fc 100%); border: 1px dashed var(--primary-600);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section class="section-padding" id="features">
+        <div class="container text-center">
+            <h2 class="h3 fw-bold mb-2">Powerful Analytical Capabilities</h2>
+            <p class="text-muted mb-5" style="max-width: 500px; margin: 0 auto;">Everything you need to understand e-commerce data structures, customer retention, and operations.</p>
+            
+            <div class="row g-4 text-start">
+                <!-- Card 1 -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 border p-4 bg-white shadow-sm" style="border-radius: 8px;">
+                        <div class="p-2.5 rounded-3 bg-primary-50 text-primary-600 d-inline-block mb-3 border" style="width: 42px; height: 42px; border-color: rgba(99, 102, 241, 0.2) !important;">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <h4 class="fw-bold fs-6 mb-2">Revenue Analytics</h4>
+                        <p class="text-muted small mb-0">Track monthly trends, average order values (AOV), and high-grossing product categories dynamically.</p>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 border p-4 bg-white shadow-sm" style="border-radius: 8px;">
+                        <div class="p-2.5 rounded-3 bg-success-50 text-success-600 d-inline-block mb-3 border" style="width: 42px; height: 42px; border-color: rgba(16, 185, 129, 0.2) !important;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h4 class="fw-bold fs-6 mb-2">Customer Analytics</h4>
+                        <p class="text-muted small mb-0">Understand customer demographics, purchase frequencies, and RFM segment breakdowns.</p>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 border p-4 bg-white shadow-sm" style="border-radius: 8px;">
+                        <div class="p-2.5 rounded-3 bg-info-50 text-info-600 d-inline-block mb-3 border" style="width: 42px; height: 42px; border-color: rgba(6, 182, 212, 0.2) !important;">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                        <h4 class="fw-bold fs-6 mb-2">Retention Analysis</h4>
+                        <p class="text-muted small mb-0">Monitor cohort matrix indices, return intervals, and customer lifecycle longevity.</p>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 border p-4 bg-white shadow-sm" style="border-radius: 8px;">
+                        <div class="p-2.5 rounded-3 bg-danger-50 text-danger-600 d-inline-block mb-3 border" style="width: 42px; height: 42px; border-color: rgba(225, 29, 72, 0.2) !important;">
+                            <i class="bi bi-chat-square-text"></i>
+                        </div>
+                        <h4 class="fw-bold fs-6 mb-2">Review Analytics</h4>
+                        <p class="text-muted small mb-0">Evaluate average review scores, delivery SLA compliance, and sentiment classifications.</p>
+                    </div>
+                </div>
+                <!-- Card 5 -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 border p-4 bg-white shadow-sm" style="border-radius: 8px;">
+                        <div class="p-2.5 rounded-3 bg-warning-50 text-warning-600 d-inline-block mb-3 border" style="width: 42px; height: 42px; border-color: rgba(245, 158, 11, 0.2) !important;">
+                            <i class="bi bi-rocket-takeoff"></i>
+                        </div>
+                        <h4 class="fw-bold fs-6 mb-2">Action Center</h4>
+                        <p class="text-muted small mb-0">Review auto-generated strategic findings, opportunities, and prioritized actions.</p>
+                    </div>
+                </div>
+                <!-- Card 6 -->
+                <div class="col-12 col-md-4">
+                    <div class="card h-100 border p-4 bg-white shadow-sm" style="border-radius: 8px;">
+                        <div class="p-2.5 rounded-3 bg-primary-50 text-primary-600 d-inline-block mb-3 border" style="width: 42px; height: 42px; border-color: rgba(99, 102, 241, 0.2) !important;">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h4 class="fw-bold fs-6 mb-2">Forecasting & Predictions</h4>
+                        <p class="text-muted small mb-0">Generate 3-month forward revenue projections and customer acquisitions based on trends.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="section-padding" id="how-it-works" style="background-color: var(--bg-canvas);">
+        <div class="container text-center">
+            <h2 class="h3 fw-bold mb-2">How It Works</h2>
+            <p class="text-muted mb-5" style="max-width: 500px; margin: 0 auto;">A structured workflow from raw transactional logs to executive insights.</p>
+            
+            <div class="row g-4">
+                <!-- Step 1 -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="bg-white border rounded-3 p-4 text-center h-100 shadow-sm">
+                        <span class="badge bg-primary text-white rounded-pill px-3 py-1 mb-3">Step 1</span>
+                        <h5 class="fw-bold fs-6 mb-2">Upload Dataset</h5>
+                        <p class="text-muted small mb-0">Drag and drop e-commerce CSVs or a ZIP archive containing transactional logs.</p>
+                    </div>
+                </div>
+                <!-- Step 2 -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="bg-white border rounded-3 p-4 text-center h-100 shadow-sm">
+                        <span class="badge bg-primary text-white rounded-pill px-3 py-1 mb-3">Step 2</span>
+                        <h5 class="fw-bold fs-6 mb-2">Validate Data</h5>
+                        <p class="text-muted small mb-0">Automatic validation system checks headers, column counts, and formats.</p>
+                    </div>
+                </div>
+                <!-- Step 3 -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="bg-white border rounded-3 p-4 text-center h-100 shadow-sm">
+                        <span class="badge bg-primary text-white rounded-pill px-3 py-1 mb-3">Step 3</span>
+                        <h5 class="fw-bold fs-6 mb-2">Generate Insights</h5>
+                        <p class="text-muted small mb-0">The computation engine parses RFM scoring, cohorts, and sales trend vectors.</p>
+                    </div>
+                </div>
+                <!-- Step 4 -->
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="bg-white border rounded-3 p-4 text-center h-100 shadow-sm">
+                        <span class="badge bg-primary text-white rounded-pill px-3 py-1 mb-3">Step 4</span>
+                        <h5 class="fw-bold fs-6 mb-2">Take Action</h5>
+                        <p class="text-muted small mb-0">Review strategic suggestions, prioritize win-backs, and track forecasts.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Showcase (Pre-loaded cards representation) -->
+    <section class="section-padding" id="showcase">
+        <div class="container text-center">
+            <h2 class="h3 fw-bold mb-2">Product Showcase</h2>
+            <p class="text-muted mb-5" style="max-width: 500px; margin: 0 auto;">Glimpse our native, pre-calculated BI views.</p>
+            
+            <div class="row g-4 align-items-center">
+                <!-- Item 1 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card border p-4 bg-white shadow-sm text-start" style="border-radius: 8px;">
+                        <h5 class="fw-bold fs-6 mb-2"><i class="bi bi-cash-stack text-primary me-2"></i>Revenue Dashboard</h5>
+                        <p class="text-muted small mb-3">Analyzes invoice trends, basket sizing (AOV), and category sales aggregates cleanly.</p>
+                        <div class="border rounded-2 bg-light p-3" style="font-size: 0.75rem;">
+                            <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                                <span class="text-muted">Avg Order Value</span>
+                                <strong class="text-dark">$154.20</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Top Category</span>
+                                <strong class="text-dark">beauty_appliances</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Item 2 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card border p-4 bg-white shadow-sm text-start" style="border-radius: 8px;">
+                        <h5 class="fw-bold fs-6 mb-2"><i class="bi bi-people-fill text-primary me-2"></i>Customer Dashboard</h5>
+                        <p class="text-muted small mb-3">Tracks RFM active segments, one-time buyer cliffs, and regional order splits.</p>
+                        <div class="border rounded-2 bg-light p-3" style="font-size: 0.75rem;">
+                            <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                                <span class="text-muted">Champions Segment</span>
+                                <strong class="text-dark">21.5% share</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Customer LTV</span>
+                                <strong class="text-dark">$166.59</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Item 3 -->
+                <div class="col-12 col-lg-4">
+                    <div class="card border p-4 bg-white shadow-sm text-start" style="border-radius: 8px;">
+                        <h5 class="fw-bold fs-6 mb-2"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Forecasting Dashboard</h5>
+                        <p class="text-muted small mb-3">Computes trend extrapolations, confidence scales (R²), and product outlook slopes.</p>
+                        <div class="border rounded-2 bg-light p-3" style="font-size: 0.75rem;">
+                            <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                                <span class="text-muted">Forecast Accuracy</span>
+                                <strong class="text-dark">82% Confidence</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Growth Trend</span>
+                                <strong class="text-dark">Stable +0.8%/mo</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="section-padding text-center" style="background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
+        <div class="container">
+            <h2 class="h3 fw-bold mb-2">Ready to Understand Your Business?</h2>
+            <p class="text-muted mb-4" style="max-width: 500px; margin: 0 auto 24px auto;">Start analyzing your data structures and unlocking growth opportunities today.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('dashboard.index') }}" class="btn-saas-primary">Get Started</a>
+                <a href="{{ url_for('upload.index') }}" class="btn-saas-secondary">Upload Dataset</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="container text-center">
+            <div class="row justify-content-center mb-4 g-3">
+                <div class="col-6 col-md-3">
+                    <h6 class="text-white fw-bold small text-uppercase mb-3">About</h6>
+                    <p class="small text-muted" style="max-width: 200px; margin: 0 auto;">GrowthLens is a modern, high-speed business intelligence SaaS platform mapping Olist parameters.</p>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h6 class="text-white fw-bold small text-uppercase mb-3">Features</h6>
+                    <ul class="list-unstyled small gap-2 d-flex flex-column m-0">
+                        <li><a href="#features" class="text-muted text-decoration-none">Core Modules</a></li>
+                        <li><a href="#how-it-works" class="text-muted text-decoration-none">How It Works</a></li>
+                        <li><a href="{{ url_for('upload.index') }}" class="text-muted text-decoration-none">Validation</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h6 class="text-white fw-bold small text-uppercase mb-3">Platform</h6>
+                    <ul class="list-unstyled small gap-2 d-flex flex-column m-0">
+                        <li><a href="#" class="text-muted text-decoration-none"><i class="bi bi-github me-1"></i>GitHub Code</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none"><i class="bi bi-envelope me-1"></i>Contact Team</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center text-muted small">
+                <span>&copy; 2026 GrowthLens. All rights reserved.</span>
+                <span>Version 1.0.0 (Demo Mode Enabled)</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

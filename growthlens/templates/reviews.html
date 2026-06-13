@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Satisfaction & Reviews{% endblock %}
+{% block page_title %}Customer Satisfaction & Reviews{% endblock %}
+{% block page_h1 %}Customer Satisfaction & Reviews{% endblock %}
+{% block page_desc %}Assess customer reviews, SLA delivery gaps, and sentiment breakdowns.{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    {% if not loaded %}
+    <!-- Fallback if pipeline not initialized -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger p-4" role="alert">
+                <h4 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>DataManager Not Ready</h4>
+                <p class="mb-0">The data engineering pipeline has not successfully loaded the Olist datasets. Please check the dataset connection status on the <a href="{{ url_for('data_overview.index') }}" class="alert-link">Data Overview</a> page to initialize the analytics matrix.</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Row 1: KPI Stat Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Card 1: Average Review Score -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Avg Rating</div>
+                    <div class="card-value" style="font-size: 1.25rem;">{{ kpis.avg_review_score }} <span class="fs-6 text-muted">/ 5.0</span></div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small">Mean review rating</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card 2: Positive Review Rate -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Positive Rate</div>
+                    <div class="card-value" style="font-size: 1.25rem;">{{ kpis.positive_rate }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="card-trend trend-up"><i class="bi bi-emoji-smile-fill me-1"></i>4-5 Star share</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Negative Review Rate -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Negative Rate</div>
+                    <div class="card-value" style="font-size: 1.25rem; color: var(--danger-600);">{{ kpis.negative_rate }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="card-trend trend-down"><i class="bi bi-emoji-frown-fill me-1"></i>1-2 Star share</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Late Delivery Rate -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Late Deliveries</div>
+                    <div class="card-value" style="font-size: 1.25rem; color: var(--danger-600);">{{ kpis.late_delivery_rate }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small">Delivered past SLA</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: On-Time Delivery Rate -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">On-Time Rate</div>
+                    <div class="card-value text-truncate" style="font-size: 1.25rem; font-weight: 700; color: var(--success-600);">{{ kpis.on_time_delivery_rate }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="card-trend trend-up"><i class="bi bi-calendar-check-fill me-1"></i>SLA compliant</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6: Lowest Rated Category -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Lowest Category</div>
+                    <div class="card-value text-truncate" style="font-size: 1.05rem; font-weight: 700;" title="{{ kpis.lowest_category }}">{{ kpis.lowest_category.replace('_', ' ') }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="text-muted small">Score: {{ kpis.lowest_category_rating }} stars</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Satisfaction vs Retention Panel -->
+    <div class="card border-0 shadow-sm mb-4" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+        <div class="card-body p-4">
+            <h5 class="fw-bold text-slate-800 mb-3 fs-6"><i class="bi bi-bezier2 text-primary me-2"></i>Satisfaction vs Retention Comparison</h5>
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-md-3 text-center border-end">
+                    <div class="text-muted small mb-1">Repeat Customer Rating</div>
+                    <h3 class="fw-bold text-success mb-1" style="font-size: 1.75rem;">{{ "{:.2f}".format(ret_sat.repeat_avg_rating) }}</h3>
+                    <div class="small text-muted"><i class="bi bi-people-fill me-1"></i>Buyers with >1 orders</div>
+                </div>
+                <div class="col-12 col-md-3 text-center border-end">
+                    <div class="text-muted small mb-1">One-Time Customer Rating</div>
+                    <h3 class="fw-bold text-secondary mb-1" style="font-size: 1.75rem;">{{ "{:.2f}".format(ret_sat.one_time_avg_rating) }}</h3>
+                    <div class="small text-muted"><i class="bi bi-person-fill me-1"></i>Buyers with 1 order</div>
+                </div>
+                <div class="col-12 col-md-3 text-center border-end">
+                    <div class="text-muted small mb-1">Satisfaction Gap</div>
+                    <h3 class="fw-bold text-primary mb-1" style="font-size: 1.75rem;">{{ "{:+.2f}".format(ret_sat.difference) }}</h3>
+                    <div class="small text-muted"><i class="bi bi-activity me-1"></i>Variance in ratings</div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <div class="alert alert-light border-0 m-0 py-2.5 px-3 small" style="background-color: var(--bg-canvas);">
+                        <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                        {% if ret_sat.difference > 0 %}
+                        Returning buyers report higher ratings. Optimizing initial purchase customer service holds the key to unlock repeat conversions.
+                        {% else %}
+                        Customer satisfaction gaps indicate post-purchase friction. Resolving logistics delays is critical to prevent churn.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Health Section -->
+    <h5 class="fw-bold mb-3 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-activity text-danger me-2"></i>Satisfaction Health & Quality Indicators</h5>
+    <div class="row g-4 mb-4">
+        <!-- Satisfaction Health -->
+        <div class="col-12 col-md-4">
+            <div class="insight-card h-100 {% if health.satisfaction.badge == 'success' %}insight-success{% elif health.satisfaction.badge == 'warning' %}insight-warning{% else %}insight-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-slate-800" style="font-size: 0.875rem;">Customer Satisfaction</span>
+                    <span class="status-indicator {% if health.satisfaction.badge == 'success' %}status-ready{% elif health.satisfaction.badge == 'warning' %}status-partial{% else %}status-missing{% endif %}">{{ health.satisfaction.status }}</span>
+                </div>
+                <p class="text-muted small mb-0" style="font-size: 0.8125rem;">{{ health.satisfaction.desc }}</p>
+            </div>
+        </div>
+
+        <!-- Delivery Performance -->
+        <div class="col-12 col-md-4">
+            <div class="insight-card h-100 {% if health.delivery.badge == 'success' %}insight-success{% elif health.delivery.badge == 'warning' %}insight-warning{% else %}insight-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-slate-800" style="font-size: 0.875rem;">Delivery SLA Compliance</span>
+                    <span class="status-indicator {% if health.delivery.badge == 'success' %}status-ready{% elif health.delivery.badge == 'warning' %}status-partial{% else %}status-missing{% endif %}">{{ health.delivery.status }}</span>
+                </div>
+                <p class="text-muted small mb-0" style="font-size: 0.8125rem;">{{ health.delivery.desc }}</p>
+            </div>
+        </div>
+
+        <!-- Review Sentiment -->
+        <div class="col-12 col-md-4">
+            <div class="insight-card h-100 {% if health.sentiment.badge == 'success' %}insight-success{% elif health.sentiment.badge == 'warning' %}insight-warning{% else %}insight-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-slate-800" style="font-size: 0.875rem;">Feedback Sentiment</span>
+                    <span class="status-indicator {% if health.sentiment.badge == 'success' %}status-ready{% elif health.sentiment.badge == 'warning' %}status-partial{% else %}status-missing{% endif %}">{{ health.sentiment.status }}</span>
+                </div>
+                <p class="text-muted small mb-0" style="font-size: 0.8125rem;">{{ health.sentiment.desc }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Distribution and Sentiment Donut -->
+    <div class="row g-4 mb-4">
+        <!-- Review Score Distribution -->
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Review Score Distribution</h5>
+                        <p class="card-subtitle">Volume breakdown of stars 1 through 5</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Review Count</span>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div id="score-dist-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Sentiment Donut -->
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Review Sentiment Distribution</h5>
+                        <p class="card-subtitle">Aggregated classified user sentiments</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Sentiment Mix</span>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div id="sentiment-donut-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Category Average Rating -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Average Rating by Product Category (Top 15 Volume)</h5>
+                        <p class="card-subtitle">Mean customer review ratings of top categories</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Mean Review Score</span>
+                </div>
+                <div class="chart-container">
+                    <div id="category-rating-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 4: Box Plot & Late Impact -->
+    <div class="row g-4 mb-4">
+        <!-- Delivery Time Box plot -->
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Delivery Days vs Review Score</h5>
+                        <p class="card-subtitle">Order arrival time range spreads relative to scores</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Box Plot Distribution</span>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div id="delivery-box-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+        <!-- Late Delivery Impact -->
+        <div class="col-12 col-md-6">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Late Delivery Impact Analysis</h5>
+                        <p class="card-subtitle">Comparison of average ratings on late vs on-time orders</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Average Rating Comparison</span>
+                </div>
+                <div class="chart-container" style="height: 350px;">
+                    <div id="late-impact-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 5: Review Score by State -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Average Review Score by State</h5>
+                        <p class="card-subtitle">Mean review scores across Brazil states</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Geographic Ratings</span>
+                </div>
+                <div class="chart-container" style="height: 380px;">
+                    <div id="state-rating-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Root Cause Analysis Section -->
+    <div class="card border-0 shadow-sm mb-4" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+        <div class="card-body p-4">
+            <h5 class="fw-bold text-slate-800 mb-3 fs-6"><i class="bi bi-search text-danger me-2"></i>Root Cause Analysis (Satisfaction Underperformers)</h5>
+            <div class="row g-4">
+                <!-- Worst Categories -->
+                <div class="col-12 col-md-4">
+                    <div class="p-3 bg-light rounded border-start border-4 border-danger h-100" style="background-color: var(--bg-canvas) !important; border-radius: 6px;">
+                        <h6 class="fw-bold text-slate-800 mb-2 small"><i class="bi bi-tag text-danger me-1"></i>Lowest Rated Categories</h6>
+                        <ul class="list-group list-group-flush bg-transparent m-0 p-0">
+                            {% for cat in root_cause.worst_categories %}
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-0 border-0 small">
+                                <span class="text-truncate" style="max-width: 180px;">{{ cat.product_category_name_english.replace('_', ' ') }}</span>
+                                <span class="badge bg-danger text-white rounded-pill px-2 py-1">{{ "{:.2f}".format(cat.avg_review_score) }} stars</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Highest Delay Categories -->
+                <div class="col-12 col-md-4">
+                    <div class="p-3 bg-light rounded border-start border-4 border-warning h-100" style="background-color: var(--bg-canvas) !important; border-radius: 6px;">
+                        <h6 class="fw-bold text-slate-800 mb-2 small"><i class="bi bi-clock-history text-warning me-1"></i>Highest Delivery Delay Categories</h6>
+                        <ul class="list-group list-group-flush bg-transparent m-0 p-0">
+                            {% for cat in root_cause.worst_delays %}
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-0 border-0 small">
+                                <span class="text-truncate" style="max-width: 180px;">{{ cat.product_category_name_english.replace('_', ' ') }}</span>
+                                <span class="badge bg-warning text-dark rounded-pill px-2 py-1">{{ "{:.1f}".format(cat.avg_delivery_days) }} days</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Worst States -->
+                <div class="col-12 col-md-4">
+                    <div class="p-3 bg-light rounded border-start border-4 border-secondary h-100" style="background-color: var(--bg-canvas) !important; border-radius: 6px;">
+                        <h6 class="fw-bold text-slate-800 mb-2 small"><i class="bi bi-geo-alt text-secondary me-1"></i>Lowest Rated States</h6>
+                        <ul class="list-group list-group-flush bg-transparent m-0 p-0">
+                            {% for st in root_cause.worst_states %}
+                            <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-0 border-0 small">
+                                <span>State: {{ st.customer_state }}</span>
+                                <span class="badge bg-secondary text-white rounded-pill px-2 py-1">{{ "{:.2f}".format(st.avg_review_score) }} stars</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 6: Insight Cards -->
+    <h5 class="fw-bold mb-3 mt-4 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-lightbulb-fill text-warning me-2"></i>Automated Satisfaction Insights</h5>
+    <div class="row g-3 mb-4">
+        {% for insight in insights %}
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="insight-card h-100 {% if insight.type == 'success' %}insight-success{% elif insight.type == 'warning' %}insight-warning{% elif insight.type == 'info' %}insight-info{% else %}insight-secondary{% endif %}">
+                <div class="insight-header">
+                    <i class="bi {{ insight.icon }} insight-icon {% if insight.type == 'success' %}text-success{% elif insight.type == 'warning' %}text-warning{% elif insight.type == 'info' %}text-primary{% else %}text-muted{% endif %}"></i>
+                    <span>{{ insight.title }}</span>
+                </div>
+                <div class="insight-body">
+                    {{ insight.text | safe }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Row 7: Recommendation Engine -->
+    <h5 class="fw-bold mb-3 mt-4 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-rocket-takeoff-fill text-primary me-2"></i>Suggested Strategy Recommendations</h5>
+    <div class="table-custom-card mb-5">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Finding</th>
+                    <th style="width: 25%;">Impact</th>
+                    <th style="width: 35%;">Strategic Action Plan</th>
+                    <th style="width: 15%; text-align: center;">Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in recommendations %}
+                <tr>
+                    <td class="fw-semibold">{{ rec.finding }}</td>
+                    <td class="text-muted">{{ rec.impact }}</td>
+                    <td>{{ rec.recommendation }}</td>
+                    <td style="text-align: center;">
+                        <span class="status-indicator {% if rec.priority == 'Critical' %}status-missing{% elif rec.priority == 'High' %}status-partial{% else %}status-ready{% endif %}">
+                            {{ rec.priority }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if loaded %}
+<!-- Initialize Plotly plots -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const plotConfig = { responsive: true, displayModeBar: false };
+
+        const scoreDistData = {{ graphs.score_dist | safe }};
+        scoreDistData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        scoreDistData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        scoreDistData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (scoreDistData.layout.xaxis) { scoreDistData.layout.xaxis.linecolor = '#e2e8f0'; scoreDistData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (scoreDistData.layout.yaxis) { scoreDistData.layout.yaxis.linecolor = '#e2e8f0'; scoreDistData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('score-dist-chart', scoreDistData.data, scoreDistData.layout, plotConfig);
+        
+        const sentimentDonutData = {{ graphs.sentiment_donut | safe }};
+        sentimentDonutData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        sentimentDonutData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        sentimentDonutData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        Plotly.newPlot('sentiment-donut-chart', sentimentDonutData.data, sentimentDonutData.layout, plotConfig);
+
+        const categoryRatingData = {{ graphs.category_rating | safe }};
+        categoryRatingData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        categoryRatingData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        categoryRatingData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (categoryRatingData.layout.xaxis) { categoryRatingData.layout.xaxis.linecolor = '#e2e8f0'; categoryRatingData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (categoryRatingData.layout.yaxis) { categoryRatingData.layout.yaxis.linecolor = '#e2e8f0'; categoryRatingData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('category-rating-chart', categoryRatingData.data, categoryRatingData.layout, plotConfig);
+
+        const deliveryBoxData = {{ graphs.delivery_box | safe }};
+        deliveryBoxData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        deliveryBoxData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        deliveryBoxData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (deliveryBoxData.layout.xaxis) { deliveryBoxData.layout.xaxis.linecolor = '#e2e8f0'; deliveryBoxData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (deliveryBoxData.layout.yaxis) { deliveryBoxData.layout.yaxis.linecolor = '#e2e8f0'; deliveryBoxData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('delivery-box-chart', deliveryBoxData.data, deliveryBoxData.layout, plotConfig);
+
+        const lateImpactData = {{ graphs.late_impact | safe }};
+        lateImpactData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        lateImpactData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        lateImpactData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (lateImpactData.layout.xaxis) { lateImpactData.layout.xaxis.linecolor = '#e2e8f0'; lateImpactData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (lateImpactData.layout.yaxis) { lateImpactData.layout.yaxis.linecolor = '#e2e8f0'; lateImpactData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('late-impact-chart', lateImpactData.data, lateImpactData.layout, plotConfig);
+
+        const stateRatingData = {{ graphs.state_rating | safe }};
+        stateRatingData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        stateRatingData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        stateRatingData.layout.font = { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" };
+        if (stateRatingData.layout.xaxis) { stateRatingData.layout.xaxis.linecolor = '#e2e8f0'; stateRatingData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (stateRatingData.layout.yaxis) { stateRatingData.layout.yaxis.linecolor = '#e2e8f0'; stateRatingData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('state-rating-chart', stateRatingData.data, stateRatingData.layout, plotConfig);
+    });
+</script>
+{% endif %}
+{% endblock %}

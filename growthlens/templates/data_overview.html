@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Engineering Overview{% endblock %}
+{% block page_title %}Data Engineering Overview{% endblock %}
+{% block page_h1 %}Data Engineering Overview{% endblock %}
+{% block page_desc %}Operated data files, cached shapes, diagnostic pipelines, and health variables.{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Header alert about caching (Flat Clean Hero card) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="hero-flat-card">
+                <div class="d-flex align-items-center">
+                    <div class="p-2 bg-light rounded-3 me-3 text-primary" style="background-color: rgba(255,255,255,0.1) !important;">
+                        <i class="bi bi-database-gear fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-white">DataManager Diagnostic Report</h5>
+                        <p class="mb-0 text-slate-300" style="font-size: 0.875rem;">The data engineering layer is clean-merged into cache on Flask startup. Master dataset shape: <strong class="text-white">{{ diagnostics.shape[0] }} rows × {{ diagnostics.shape[1] }} columns</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master diagnostics KPI cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Unique Customers</div>
+                    <div class="card-value">{{ "{:,}".format(diagnostics.unique_customers) }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="card-trend trend-up"><i class="bi bi-check-circle-fill me-1"></i>Customers Loaded</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Unique Orders</div>
+                    <div class="card-value">{{ "{:,}".format(diagnostics.unique_orders) }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="card-trend trend-up"><i class="bi bi-check-circle-fill me-1"></i>Orders Joined</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Unique Products</div>
+                    <div class="card-value">{{ "{:,}".format(diagnostics.unique_products) }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="card-trend trend-up"><i class="bi bi-check-circle-fill me-1"></i>Products Left-Joined</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Total Revenue</div>
+                    <div class="card-value">${{ "{:,.2f}".format(diagnostics.total_revenue) }}</div>
+                </div>
+                <div class="card-meta">
+                    <span class="card-trend trend-up"><i class="bi bi-check-circle-fill me-1"></i>Billed Payments Sum</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dataset summaries grid -->
+    <h5 class="fw-bold mb-3 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i>Individual Dataset Summaries</h5>
+    <div class="row g-4 mb-4">
+        {% for report in health_reports %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm h-100" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+                <div class="card-header bg-transparent border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-slate-800 text-capitalize fs-6">{{ report.dataset_name.replace('_', ' ') }}</span>
+                    {% if report.status == 'Loaded' %}
+                        <span class="status-indicator status-ready"><i class="bi bi-check-circle-fill me-1"></i>Loaded</span>
+                    {% else %}
+                        <span class="status-indicator status-missing" title="{{ report.error_message }}"><i class="bi bi-x-circle-fill me-1"></i>Failed</span>
+                    {% endif %}
+                </div>
+                <div class="card-body p-3">
+                    <p class="text-muted font-monospace small mb-3 text-truncate"><i class="bi bi-file-earmark-code me-1"></i>{{ report.file_name }}</p>
+                    
+                    <div class="row g-2 mb-2 text-center">
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded border" style="background-color: var(--bg-canvas) !important; border-color: var(--border-main) !important;">
+                                <div class="text-muted small">Rows</div>
+                                <div class="fw-bold text-dark font-monospace">{{ "{:,}".format(report.rows) }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-light rounded border" style="background-color: var(--bg-canvas) !important; border-color: var(--border-main) !important;">
+                                <div class="text-muted small">Columns</div>
+                                <div class="fw-bold text-dark font-monospace">{{ report.columns }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush small">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0" style="border-bottom: 1px solid var(--border-subtle) !important;">
+                            <span class="text-muted">Missing Value Cells</span>
+                            <span class="badge bg-light text-{% if report.missing_values > 0 %}warning{% else %}secondary{% endif %} border font-monospace">{{ "{:,}".format(report.missing_values) }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2 border-0">
+                            <span class="text-muted">Duplicate Row Count</span>
+                            <span class="badge bg-light text-{% if report.duplicates > 0 %}danger{% else %}secondary{% endif %} border font-monospace">{{ "{:,}".format(report.duplicates) }}</span>
+                        </li>
+                    </ul>
+                    {% if report.status == 'Failed' and report.error_message %}
+                        <div class="alert alert-danger p-2 small mt-2 mb-0" role="alert">
+                            <i class="bi bi-exclamation-octagon-fill me-1"></i>{{ report.error_message }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Data Quality and Integrity details -->
+    <div class="row g-4 mb-5">
+        <!-- Master analytics_df Column Overview -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-card h-100">
+                <div class="card-header border-bottom">
+                    <h5 class="card-title m-0 fw-bold fs-6"><i class="bi bi-list-check text-primary me-2"></i>Master DataFrame Columns (analytics_df)</h5>
+                </div>
+                <div class="card-body p-3" style="max-height: 400px; overflow-y: auto;">
+                    <p class="text-muted small mb-2">Final clean data columns and derived indices cached inside memory:</p>
+                    <table class="table-custom" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Column</th>
+                                <th>Category / Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>customer_id</code></td><td>Customer Metric</td></tr>
+                            <tr><td><code>customer_unique_id</code></td><td>Customer Metric</td></tr>
+                            <tr><td><code>customer_city</code></td><td>Geographic</td></tr>
+                            <tr><td><code>customer_state</code></td><td>Geographic</td></tr>
+                            <tr><td><code>order_id</code></td><td>Order Metric</td></tr>
+                            <tr><td><code>order_status</code></td><td>Status</td></tr>
+                            <tr><td><code>order_purchase_timestamp</code></td><td>Datetime</td></tr>
+                            <tr><td><code>payment_value</code></td><td>Finance</td></tr>
+                            <tr><td><code>review_score</code></td><td>Review score</td></tr>
+                            <tr><td><code>product_id</code></td><td>Product Metric</td></tr>
+                            <tr><td><code>product_category_name_english</code></td><td>Translated Category</td></tr>
+                            <tr><td><code>seller_id</code></td><td>Seller Metric</td></tr>
+                            <tr><td><code>seller_city</code></td><td>Geographic</td></tr>
+                            <tr><td><code>seller_state</code></td><td>Geographic</td></tr>
+                            <tr><td><code>purchase_year</code></td><td><span class="status-indicator status-ready" style="font-size: 0.7rem;">Derived</span> Year</td></tr>
+                            <tr><td><code>purchase_month</code></td><td><span class="status-indicator status-ready" style="font-size: 0.7rem;">Derived</span> Month</td></tr>
+                            <tr><td><code>purchase_day</code></td><td><span class="status-indicator status-ready" style="font-size: 0.7rem;">Derived</span> Day</td></tr>
+                            <tr><td><code>purchase_weekday</code></td><td><span class="status-indicator status-ready" style="font-size: 0.7rem;">Derived</span> Weekday</td></tr>
+                            <tr><td><code>purchase_year_month</code></td><td><span class="status-indicator status-ready" style="font-size: 0.7rem;">Derived</span> Year-Month</td></tr>
+                            <tr><td><code>delivery_days</code></td><td><span class="status-indicator status-ready" style="font-size: 0.7rem;">Derived</span> Time Delta</td></tr>
+                            <tr><td><code>review_bucket</code></td><td><span class="status-indicator status-ready" style="font-size: 0.7rem;">Derived</span> Classification</td></tr>
+                            <tr><td><code>order_value</code></td><td><span class="status-indicator status-ready" style="font-size: 0.7rem;">Derived</span> Price</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- System health report details -->
+        <div class="col-12 col-lg-6">
+            <div class="chart-card h-100">
+                <div class="card-header border-bottom">
+                    <h5 class="card-title m-0 fw-bold fs-6"><i class="bi bi-shield-check text-success me-2"></i>Dataset Health Status</h5>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <div class="py-4">
+                        {% if diagnostics.load_success %}
+                            <i class="bi bi-check-circle-fill text-success display-4 mb-3 d-block"></i>
+                            <h4 class="fw-bold fs-5">All Pipelines Operational</h4>
+                            <p class="text-muted px-4 small">DataManager successfully mapped database tables. Integrity matches expected Olist features. Blueprints read metrics directly from cache memory.</p>
+                        {% else %}
+                            <i class="bi bi-exclamation-triangle-fill text-danger display-4 mb-3 d-block"></i>
+                            <h4 class="fw-bold fs-5">Pipeline Integrity Error</h4>
+                            <p class="text-muted px-4 small">A dataset loading error occurred. Please verify source CSV files in the data directory.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Overview{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+{% block page_h1 %}Dashboard Overview{% endblock %}
+{% block page_desc %}Operational diagnostics, dataset connections, and primary sales indices.{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Row 1: KPI Stat Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Total Revenue</div>
+                    <div class="card-value">
+                        {% if diagnostics.load_success %}
+                            ${{ "{:,.2f}".format(diagnostics.total_revenue) }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-meta">
+                    {% if diagnostics.load_success %}
+                        <span class="card-trend trend-up"><i class="bi bi-check-circle-fill me-1"></i>Calculated Live</span>
+                    {% else %}
+                        <span class="spinner-border spinner-border-sm me-1 text-primary" role="status" aria-hidden="true"></span>
+                        Awaiting pipeline calculation...
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Total Customers</div>
+                    <div class="card-value">
+                        {% if diagnostics.load_success %}
+                            {{ "{:,}".format(diagnostics.unique_customers) }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-meta">
+                    {% if diagnostics.load_success %}
+                        <span class="card-trend trend-up"><i class="bi bi-check-circle-fill me-1"></i>Calculated Live</span>
+                    {% else %}
+                        <span class="spinner-border spinner-border-sm me-1 text-success" role="status" aria-hidden="true"></span>
+                        Awaiting pipeline calculation...
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Total Orders</div>
+                    <div class="card-value">
+                        {% if diagnostics.load_success %}
+                            {{ "{:,}".format(diagnostics.unique_orders) }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-meta">
+                    {% if diagnostics.load_success %}
+                        <span class="card-trend trend-up"><i class="bi bi-check-circle-fill me-1"></i>Calculated Live</span>
+                    {% else %}
+                        <span class="spinner-border spinner-border-sm me-1 text-info" role="status" aria-hidden="true"></span>
+                        Awaiting pipeline calculation...
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title">Average Review Score</div>
+                    <div class="card-value">
+                        {% if diagnostics.load_success %}
+                            {{ "{:.2f}".format(diagnostics.avg_review_score) }} <span class="fs-6 text-muted">/ 5.0</span>
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-meta">
+                    {% if diagnostics.load_success %}
+                        <span class="card-trend trend-up"><i class="bi bi-check-circle-fill me-1"></i>Calculated Live</span>
+                    {% else %}
+                        <span class="spinner-border spinner-border-sm me-1 text-warning" role="status" aria-hidden="true"></span>
+                        Awaiting pipeline calculation...
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Dataset Status & Pipeline Info -->
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-lg-5">
+            <div class="card h-100 border-0 shadow-sm" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="card-title m-0 fw-bold fs-6"><i class="bi bi-folder-check text-primary me-2"></i>Dataset Connection</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-4">The Olist database engine scans local file states inside the <code>data/</code> folder on application startup to verify diagnostic schemas.</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="small text-muted fw-semibold">Dataset Folder Detected</span>
+                        {% if dataset_status.detected %}
+                            <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Yes</span>
+                        {% else %}
+                            <span class="text-danger small fw-bold"><i class="bi bi-x-circle-fill me-1"></i>No</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="small text-muted fw-semibold">Olist CSV Files Found</span>
+                        <span class="badge bg-light text-dark border px-2 py-1 font-monospace fw-bold">{{ dataset_status.files_found }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="small text-muted fw-semibold">Last Modified</span>
+                        <span class="text-dark small font-monospace">{{ dataset_status.last_refresh }}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <span class="small text-muted fw-semibold">Data Pipeline State</span>
+                        {% if dataset_status.is_ready %}
+                            <span class="status-indicator status-ready"><i class="bi bi-check-circle-fill me-1"></i>{{ dataset_status.ready_status }}</span>
+                        {% elif dataset_status.detected and dataset_status.ready_status == 'Partial Data' %}
+                            <span class="status-indicator status-partial"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ dataset_status.ready_status }}</span>
+                        {% else %}
+                            <span class="status-indicator status-missing"><i class="bi bi-x-circle-fill me-1"></i>{{ dataset_status.ready_status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-7">
+            <div class="card h-100 border-0 shadow-sm" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+                <div class="card-header bg-transparent border-bottom py-3">
+                    <h5 class="card-title m-0 fw-bold fs-6"><i class="bi bi-cpu text-primary me-2"></i>Analysis Pipeline Engine</h5>
+                </div>
+                <div class="card-body p-4">
+                    <h6 class="fw-bold mb-2">Memory-Mapped Execution Model</h6>
+                    <p class="text-muted small mb-3">Database models are designed for user identity metadata. The calculation pipeline is built purely on in-memory Pandas data structures, ensuring real-time response times when traversing large Olist transactional records.</p>
+                    
+                    <div class="alert alert-light border d-flex align-items-start mt-3 mb-0" role="alert" style="background-color: var(--bg-canvas);">
+                        <i class="bi bi-info-circle text-primary me-2 mt-0.5"></i>
+                        <div>
+                            <strong class="d-block mb-1 text-slate-800 small fw-bold">Live Execution Mode</strong>
+                            <span class="small text-muted">Analytics are generated live from connected database tables and merged on app start. Charts below display actual historical outputs.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Charts -->
+    <div class="row g-4">
+        <!-- Sales & Orders Trend -->
+        <div class="col-12 col-lg-8">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Sales & Orders Trend (Monthly)</h5>
+                        <p class="card-subtitle">Comparing gross revenue volume with total transaction volumes</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Line Chart</span>
+                </div>
+                <div class="chart-container">
+                    {% if diagnostics.load_success %}
+                        <div id="sales-orders-trend" style="width: 100%; height: 100%;"></div>
+                    {% else %}
+                        <div class="chart-placeholder-bg"></div>
+                        <div class="chart-loading-content">
+                            <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="chart-loading-text">Waiting for Olist analytical pipeline data...</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Geographic Order Share -->
+        <div class="col-12 col-lg-4">
+            <div class="chart-card">
+                <div class="card-header">
+                    <div>
+                        <h5 class="card-title">Geographic Order Share</h5>
+                        <p class="card-subtitle">State-by-state order concentrations</p>
+                    </div>
+                    <span class="badge bg-light text-muted border">Choropleth Map</span>
+                </div>
+                <div class="chart-container">
+                    {% if diagnostics.load_success %}
+                        <div id="geographic-share" style="width: 100%; height: 100%;"></div>
+                    {% else %}
+                        <div class="chart-placeholder-bg"></div>
+                        <div class="chart-loading-content">
+                            <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="chart-loading-text">Waiting for Olist analytical pipeline data...</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if loaded %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const plotConfig = { responsive: true, displayModeBar: false };
+
+        // 1. Sales & Orders Trend Line Chart
+        const trendData = {{ trend_data | safe }};
+        const xValues = trendData.map(d => d.purchase_year_month);
+        const yRev = trendData.map(d => d.revenue);
+        const yOrd = trendData.map(d => d.orders);
+        
+        const traceRev = {
+            x: xValues,
+            y: yRev,
+            name: 'Revenue ($)',
+            type: 'scatter',
+            mode: 'lines',
+            line: { color: '#4f46e5', width: 2 },
+            marker: { size: 4 }
+        };
+        
+        const traceOrd = {
+            x: xValues,
+            y: yOrd,
+            name: 'Orders Count',
+            type: 'scatter',
+            mode: 'lines',
+            line: { color: '#0891b2', width: 2, dash: 'dash' },
+            marker: { size: 4 },
+            yaxis: 'y2'
+        };
+        
+        const layoutTrend = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" },
+            margin: { l: 60, r: 60, t: 15, b: 30 },
+            showlegend: true,
+            legend: { orientation: "h", yanchor: "bottom", y: 1.02, xanchor: "right", x: 1 },
+            xaxis: { showgrid: false, linecolor: "#e2e8f0" },
+            yaxis: { title: 'Revenue ($)', showgrid: true, gridcolor: "#f1f5f9", linecolor: "#e2e8f0" },
+            yaxis2: { title: 'Orders Count', overlaying: 'y', side: 'right', showgrid: false, linecolor: "#e2e8f0" }
+        };
+        
+        Plotly.newPlot('sales-orders-trend', [traceRev, traceOrd], layoutTrend, plotConfig);
+
+        // 2. Geographic Order Share Choropleth Map with Graceful Fallback
+        const stateData = {{ state_data | safe }};
+        const states = stateData.map(d => d.state);
+        const counts = stateData.map(d => d.order_count);
+        
+        fetch('https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson')
+            .then(response => response.json())
+            .then(geojson => {
+                const traceMap = {
+                    type: 'choropleth',
+                    geojson: geojson,
+                    locations: states,
+                    z: counts,
+                    featureidkey: 'properties.sigla',
+                    colorscale: [
+                        [0, '#f5f3ff'],
+                        [0.2, '#ddd6fe'],
+                        [0.4, '#c7d2fe'],
+                        [0.6, '#818cf8'],
+                        [0.8, '#6366f1'],
+                        [1.0, '#4f46e5']
+                    ],
+                    marker: { line: { color: 'white', width: 0.5 } },
+                    hovertemplate: "<b>%{location}</b><br>Orders: %{z:,}<extra></extra>"
+                };
+                
+                const layoutMap = {
+                    geo: {
+                        scope: 'south america',
+                        showland: true,
+                        landcolor: '#f8fafc',
+                        subunitcolor: '#e2e8f0',
+                        countrycolor: '#e2e8f0',
+                        fitbounds: 'geojson',
+                        visible: false
+                    },
+                    margin: { l: 0, r: 0, t: 0, b: 0 },
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)'
+                };
+                
+                Plotly.newPlot('geographic-share', [traceMap], layoutMap, plotConfig);
+            })
+            .catch(err => {
+                console.warn("Failed to load Brazil GeoJSON, falling back to bar chart:", err);
+                const fallbackTrace = {
+                    x: states.slice(0, 10),
+                    y: counts.slice(0, 10),
+                    type: 'bar',
+                    marker: { color: '#6366f1', cornerradius: 4 }
+                };
+                const fallbackLayout = {
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    font: { family: "Inter, system-ui, sans-serif", size: 11, color: "#64748b" },
+                    margin: { l: 50, r: 10, t: 20, b: 30 },
+                    xaxis: { title: 'State', linecolor: "#e2e8f0" },
+                    yaxis: { title: 'Orders', showgrid: true, gridcolor: "#f1f5f9", linecolor: "#e2e8f0" }
+                };
+                Plotly.newPlot('geographic-share', [fallbackTrace], fallbackLayout, plotConfig);
+            });
+    });
+</script>
+{% endif %}
+{% endblock %}

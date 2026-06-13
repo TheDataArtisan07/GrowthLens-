@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block title %}Action Center{% endblock %}
+{% block page_title %}Action Center{% endblock %}
+{% block page_h1 %}Action Center{% endblock %}
+{% block page_desc %}GrowthLens strategic decision-making matrix. Review findings, opportunities, and priorities.{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    {% if not loaded %}
+    <!-- Fallback if pipeline not initialized -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-danger p-4" role="alert">
+                <h4 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>DataManager Not Ready</h4>
+                <p class="mb-0">The data engineering pipeline has not successfully loaded the Olist datasets. Please check the dataset connection status on the <a href="{{ url_for('data_overview.index') }}" class="alert-link">Data Overview</a> page to initialize the analytics matrix.</p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Section 1: Key Business Snapshot (6 Cards) -->
+    <div class="row g-3 mb-4">
+        <!-- Revenue -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title" style="font-size: 0.7rem;">Revenue</div>
+                    <div class="card-value" style="font-size: 1.15rem; font-weight: 700;">${{ "{:,.2f}".format(snapshot.revenue) }}</div>
+                </div>
+            </div>
+        </div>
+        <!-- Total Customers -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title" style="font-size: 0.7rem;">Total Customers</div>
+                    <div class="card-value" style="font-size: 1.15rem; font-weight: 700;">{{ "{:,}".format(snapshot.customers) }}</div>
+                </div>
+            </div>
+        </div>
+        <!-- Repeat Purchase Rate -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title" style="font-size: 0.7rem;">Repeat Rate</div>
+                    <div class="card-value" style="font-size: 1.15rem; font-weight: 700;">{{ "{:.2f}%".format(snapshot.repeat_rate) }}</div>
+                </div>
+            </div>
+        </div>
+        <!-- Retention Rate -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title" style="font-size: 0.7rem;">Retention Rate (M1)</div>
+                    <div class="card-value" style="font-size: 1.15rem; font-weight: 700;">{{ "{:.2f}%".format(snapshot.retention_rate) }}</div>
+                </div>
+            </div>
+        </div>
+        <!-- Average Review Score -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title" style="font-size: 0.7rem;">Avg Review Score</div>
+                    <div class="card-value" style="font-size: 1.15rem; font-weight: 700;">{{ "{:.2f}".format(snapshot.avg_review_score) }}</div>
+                </div>
+            </div>
+        </div>
+        <!-- Top Product Category -->
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div>
+                    <div class="card-title" style="font-size: 0.7rem;">Top Category</div>
+                    <div class="card-value text-truncate text-primary" style="font-size: 1.05rem; font-weight: 700;" title="{{ snapshot.top_category }}">{{ snapshot.top_category }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Metrics Trend Row (Thin Indicator strip) -->
+    <div class="card border-0 mb-4" style="border: 1px solid var(--border-main) !important; border-radius: 6px;">
+        <div class="card-body py-2.5 px-4 d-flex flex-wrap justify-content-between align-items-center bg-white rounded-3">
+            <div class="d-flex align-items-center my-1 me-4">
+                <span class="text-muted small fw-semibold me-2"><i class="bi bi-cash me-1"></i>Revenue Trend:</span>
+                <span class="fw-bold {{ trends.revenue.class }}" style="font-size: 0.875rem;">{{ trends.revenue.val }}</span>
+            </div>
+            <div class="d-flex align-items-center my-1 me-4">
+                <span class="text-muted small fw-semibold me-2"><i class="bi bi-arrow-repeat me-1"></i>Retention Trend:</span>
+                <span class="fw-bold {{ trends.retention.class }}" style="font-size: 0.875rem;">{{ trends.retention.val }}</span>
+            </div>
+            <div class="d-flex align-items-center my-1 me-4">
+                <span class="text-muted small fw-semibold me-2"><i class="bi bi-star me-1"></i>Satisfaction Trend:</span>
+                <span class="fw-bold {{ trends.satisfaction.class }}" style="font-size: 0.875rem;">{{ trends.satisfaction.val }}</span>
+            </div>
+            <div class="d-flex align-items-center my-1">
+                <span class="text-muted small fw-semibold me-2"><i class="bi bi-people me-1"></i>Customer Growth:</span>
+                <span class="fw-bold {{ trends.customers.class }}" style="font-size: 0.875rem;">{{ trends.customers.val }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section: Executive Summary Briefing (Solid clean layout) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="hero-flat-card">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-primary px-3 py-1.5 fs-7 me-3"><i class="bi bi-shield-shaded me-1"></i>Executive Assessment</span>
+                    <h5 class="m-0 text-white">Strategic Assessment Briefing</h5>
+                </div>
+                <p class="mb-0" style="font-size: 0.95rem; font-weight: 400; line-height: 1.6;">
+                    {{ summary | safe }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Split Grid: Findings & Lists (Left 8/12) vs Visuals (Right 4/12) -->
+    <div class="row g-4 mb-4">
+        <!-- Left Column: Findings & Lists -->
+        <div class="col-12 col-lg-8">
+            <!-- Section 2: Top Findings (exactly 5 insights) -->
+            <h5 class="fw-bold mb-3 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-info-circle-fill text-primary me-2"></i>Top Strategic Findings</h5>
+            <div class="row g-3 mb-4">
+                {% for finding in findings %}
+                <div class="col-12">
+                    <div class="insight-card m-0 {% if finding.badge == 'success' %}insight-success{% elif finding.badge == 'warning' %}insight-warning{% elif finding.badge == 'danger' %}insight-danger{% else %}insight-info{% endif %}">
+                        <div class="insight-header">
+                            <i class="bi {{ finding.icon }} insight-icon {% if finding.badge == 'success' %}text-success{% elif finding.badge == 'warning' %}text-warning{% elif finding.badge == 'danger' %}text-danger{% else %}text-primary{% endif %}"></i>
+                            <span>{{ finding.title }}</span>
+                        </div>
+                        <div class="insight-body">
+                            {{ finding.detail }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Side by Side lists: Working Well vs Needs Attention -->
+            <div class="row g-3">
+                <!-- Section 3: What is Working Well -->
+                <div class="col-12 col-md-6">
+                    <h5 class="fw-bold mb-3 fs-6 text-uppercase tracking-wider text-success"><i class="bi bi-check-circle-fill me-2"></i>What is Working Well</h5>
+                    <div class="d-flex flex-column gap-3">
+                        {% for item in working_well %}
+                        <div class="insight-card insight-success m-0">
+                            <div class="insight-header">
+                                <i class="bi bi-check-circle-fill insight-icon text-success"></i>
+                                <span>{{ item.title }}</span>
+                            </div>
+                            <div class="insight-body">
+                                {{ item.desc }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Section 4: What Needs Attention -->
+                <div class="col-12 col-md-6">
+                    <h5 class="fw-bold mb-3 fs-6 text-uppercase tracking-wider text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>What Needs Attention</h5>
+                    <div class="d-flex flex-column gap-3">
+                        {% for item in needs_attention %}
+                        <div class="insight-card insight-danger m-0">
+                            <div class="insight-header">
+                                <i class="bi bi-exclamation-triangle-fill insight-icon text-danger"></i>
+                                <span>{{ item.title }}</span>
+                            </div>
+                            <div class="insight-body">
+                                {{ item.desc }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Visuals (Max 2 Charts) -->
+        <div class="col-12 col-lg-4">
+            <h5 class="fw-bold mb-3 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Supporting Visuals</h5>
+            
+            <!-- Chart 1: Revenue Trend -->
+            <div class="chart-card mb-4">
+                <div class="card-header bg-white py-2.5 px-3">
+                    <h6 class="fw-bold text-slate-800 mb-0" style="font-size: 0.875rem;"><i class="bi bi-graph-up text-primary me-2"></i>Revenue Trend (MoM)</h6>
+                    <span class="badge bg-light text-muted border">Line</span>
+                </div>
+                <div class="chart-container p-2" style="height: 220px;">
+                    <div id="revenue-trend-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Chart 2: Customer Segment Distribution -->
+            <div class="chart-card">
+                <div class="card-header bg-white py-2.5 px-3">
+                    <h6 class="fw-bold text-slate-800 mb-0" style="font-size: 0.875rem;"><i class="bi bi-pie-chart text-primary me-2"></i>Customer Segment Mix</h6>
+                    <span class="badge bg-light text-muted border">Donut</span>
+                </div>
+                <div class="chart-container p-2" style="height: 280px;">
+                    <div id="segment-dist-chart" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5 & 6: Strategic Tables (Full Width for Maximum Space) -->
+    <!-- Section 5: Recommended Actions -->
+    <h5 class="fw-bold mb-3 mt-4 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-rocket-takeoff-fill text-primary me-2"></i>Recommended Actions</h5>
+    <div class="table-custom-card mb-4">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Action</th>
+                    <th style="width: 30%;">Why This Matters</th>
+                    <th style="width: 30%;">Expected Impact</th>
+                    <th style="width: 15%; text-align: center;">Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for act in actions %}
+                <tr>
+                    <td class="fw-semibold">{{ act.action }}</td>
+                    <td>{{ act.why_matters }}</td>
+                    <td class="text-muted">{{ act.impact }}</td>
+                    <td style="text-align: center;">
+                        <span class="status-indicator {% if act.priority == 'Critical' %}status-missing{% elif act.priority == 'High' %}status-partial{% else %}status-ready{% endif %}">
+                            {{ act.priority }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Section 6: Top Opportunities -->
+    <h5 class="fw-bold mb-3 mt-4 fs-6 text-uppercase tracking-wider text-muted"><i class="bi bi-lightning-charge-fill text-primary me-2"></i>Top Strategic Opportunities</h5>
+    <div class="table-custom-card mb-5">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Opportunity</th>
+                    <th style="width: 35%;">Reason</th>
+                    <th style="width: 35%;">Potential Benefit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for opp in opportunities %}
+                <tr>
+                    <td class="fw-semibold text-slate-800">{{ opp.opportunity }}</td>
+                    <td>{{ opp.reason }}</td>
+                    <td class="text-muted">{{ opp.benefit }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if loaded %}
+<!-- Initialize Plotly plots -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const plotConfig = { responsive: true, displayModeBar: false };
+ 
+        const revenueTrendData = {{ graphs.revenue_trend | safe }};
+        revenueTrendData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        revenueTrendData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        revenueTrendData.layout.font = { family: "Inter, system-ui, sans-serif", size: 10, color: "#64748b" };
+        if (revenueTrendData.layout.xaxis) { revenueTrendData.layout.xaxis.linecolor = '#e2e8f0'; revenueTrendData.layout.xaxis.gridcolor = 'rgba(0,0,0,0)'; }
+        if (revenueTrendData.layout.yaxis) { revenueTrendData.layout.yaxis.linecolor = '#e2e8f0'; revenueTrendData.layout.yaxis.gridcolor = '#f1f5f9'; }
+        Plotly.newPlot('revenue-trend-chart', revenueTrendData.data, revenueTrendData.layout, plotConfig);
+
+        const segmentDistData = {{ graphs.segment_dist | safe }};
+        segmentDistData.layout.paper_bgcolor = 'rgba(0,0,0,0)';
+        segmentDistData.layout.plot_bgcolor = 'rgba(0,0,0,0)';
+        segmentDistData.layout.font = { family: "Inter, system-ui, sans-serif", size: 10, color: "#64748b" };
+        Plotly.newPlot('segment-dist-chart', segmentDistData.data, segmentDistData.layout, plotConfig);
+    });
+</script>
+{% endif %}
+{% endblock %}
