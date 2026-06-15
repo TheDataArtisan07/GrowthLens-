@@ -94,6 +94,12 @@
                             <span>Data Overview</span>
                         </a>
                     </li>
+                    <li class="{% if active_page == 'requirements' %}active{% endif %}">
+                        <a href="{{ url_for('data_overview.requirements') }}">
+                            <i class="bi bi-box-seam"></i>
+                            <span>System Requirements</span>
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="menu-label">Public Site</div>

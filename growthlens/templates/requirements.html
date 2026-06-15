@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}System Requirements{% endblock %}
+{% block page_title %}System Requirements{% endblock %}
+{% block page_h1 %}System Requirements{% endblock %}
+{% block page_desc %}Python package configurations, minimum versions, and deployment dependencies.{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Hero block -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="hero-flat-card" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;">
+                <div class="d-flex align-items-center">
+                    <div class="p-2 bg-light rounded-3 me-3 text-primary" style="background-color: rgba(255,255,255,0.1) !important;">
+                        <i class="bi bi-box-seam fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-white">Dependency Blueprint</h5>
+                        <p class="mb-0 text-slate-300" style="font-size: 0.875rem;">These Python libraries drive the core data manipulation, merging, rendering, and routing inside GrowthLens.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Dependency Details Table -->
+        <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title m-0 fw-bold fs-6"><i class="bi bi-list-stars text-primary me-2"></i>Project Dependencies</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-custom" style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 12px 16px; font-weight: 600;">Package Name</th>
+                                <th style="padding: 12px 16px; font-weight: 600;">Required Version</th>
+                                <th style="padding: 12px 16px; font-weight: 600;">Core Purpose / Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in req_list %}
+                            <tr>
+                                <td style="padding: 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <span class="fw-semibold text-slate-900 font-monospace">{{ req.name }}</span>
+                                </td>
+                                <td style="padding: 16px; border-bottom: 1px solid var(--border-subtle);">
+                                    <span class="badge bg-light text-primary border font-monospace">{{ req.version }}</span>
+                                </td>
+                                <td style="padding: 16px; border-bottom: 1px solid var(--border-subtle);" class="small text-muted">
+                                    {{ req.description }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Raw requirements.txt Card -->
+        <div class="col-12 col-lg-4">
+            <div class="card border-0 shadow-sm h-100" style="border: 1px solid var(--border-main) !important; border-radius: 8px;">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                    <h5 class="card-title m-0 fw-bold fs-6"><i class="bi bi-file-earmark-code text-primary me-2"></i>requirements.txt</h5>
+                    <button class="btn btn-outline-secondary btn-sm px-2.5 py-1" onclick="copyRequirements()"><i class="bi bi-copy me-1"></i>Copy</button>
+                </div>
+                <div class="card-body p-3 bg-light font-monospace" style="border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                    <pre id="rawContent" class="mb-0 small text-slate-800" style="white-space: pre-wrap; font-family: var(--font-mono, monospace);">{{ req_content }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyRequirements() {
+        const text = document.getElementById('rawContent').innerText;
+        navigator.clipboard.writeText(text).then(function() {
+            alert('requirements.txt copied to clipboard!');
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+        });
+    }
+</script>
+{% endblock %}
